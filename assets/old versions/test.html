@@ -1,0 +1,216 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        #game-board{
+            display: flex;
+            flex-direction: column;
+            width: 200px;
+            height: 200px;
+        }
+        .game-board-row{
+            display: flex;
+            flex: 1 0 0;
+        }
+        .game-board-column{
+            display: flex;
+            flex: 1 0 0;
+        }
+        #game-board-row-b{
+            border-top: 5px solid black;
+            border-bottom: 5px solid black;
+        }
+        .game-board-column-b{
+            border-left: 5px solid black;
+            border-right: 5px solid black;
+        }
+        .game-board-cells{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        ol, li{
+            list-style-type: none;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <section id='game-board'>
+
+        </section>
+    </main>
+<script>
+    const Game = (function(){
+        const gameBoard = {
+        width: 3,
+        height: 3,
+        cells: 0,
+        marks: ['X', 'O'],
+        container: document.querySelector('#game-board'),
+        players: [],
+        rows: [],
+        columns:[],
+        diagonals: [],
+    }
+    const matchState = {
+        nextMark: gameBoard.marks[Math.floor(Math.random() * 2)],
+        markCount: 0,
+        players: [],
+    }
+     // Generating the board HTML without eventlisteners.
+     function renderBoard(){
+        for(let i = gameBoard.width; i > 0; i--){
+            let x = ['c','b','a'];
+            renderRow(x[i-1]);
+        }
+        mapBoard();
+        pushColumns();
+        pushDiagonals();
+    }
+    function pushDiagonals(){
+        let allCells = document.querySelectorAll('.game-board-cells');
+        let diagonalA = [allCells[0], allCells[4], allCells[8]];
+        let diagonalB = [allCells[2], allCells[4], allCells[6]];
+        gameBoard.diagonals.push(diagonalA, diagonalB);
+        
+    }
+    // Sub functions of renderBoard (START)
+    function renderRow(params){
+        let row = document.createElement('div');
+        row.classList.add('game-board-row');
+        row.setAttribute('id', `game-board-row-${params}`);
+        for(let i = gameBoard.height; i > 0; i--){
+            let x = ['c','b','a'];
+            renderColumn.call(row,x[i-1]);
+        }
+        gameBoard.rows.push(row);
+        gameBoard['container'].appendChild(row)
+       
+    }
+    function renderColumn(params) {
+        let columnCell = document.createElement('div');
+        columnCell.addEventListener('click', () => placeMark(columnCell));
+        columnCell.classList.add(`game-board-column`, `game-board-column-${params}`, `game-board-cells`);
+        columnCell.setAttribute('data-mark', 'none');
+        columnCell.setAttribute('id', `game-board-cell-${gameBoard.cells}`);
+        // gameBoard.rows.push(row);
+        this.appendChild(columnCell);
+        gameBoard.cells++;
+    }
+    function placeMark(cell){
+        if(cell.getAttribute('data-mark') == 'none'){
+            cell.textContent = matchState.nextMark;
+            cell.setAttribute('data-mark', `${matchState.nextMark}`);
+            matchState.markCount++;
+            mapBoard(cell);
+            if(matchState.markCount != 0)matchState.nextMark = (matchState.nextMark == gameBoard.marks[0]) ? gameBoard.marks[1]: gameBoard.marks[0];
+        }
+        else console.log('That cell is already marked!');
+    }
+    function mapBoard(lastCell){
+        let cells = getCells(lastCell);
+        let cellsLength = Object.keys(cells).length;
+        removeOldList();
+        let ol = document.createElement('ol');
+        ol.setAttribute('id', 'list');
+        for(let cell in cells){
+            let object = cells[cell];
+            let li =document.createElement('li');
+            li.textContent = `Cell: ${object.num} ; Mark: ${object.mark} ; Value: ${object.value}`;
+            ol.appendChild(li);
+        }
+        document.querySelector('body').appendChild(ol);
+        
+    }
+    function pushColumns(){
+
+    }
+
+    function getCells(){
+        let cells = gameBoard.container.querySelectorAll('.game-board-cells');
+        let cellsObj = {};
+        for(let i = 0; i < cells.length; i++){
+            cellsObj[`cell${i}`] = {
+                num: `cell${i}`,
+                mark : cells[i].getAttribute('data-mark'),
+                value: (getMark(cells[i])  != 'none') ? 0 : computeCellValue(cells[i]),
+            }
+
+        }
+        return cellsObj;
+    }
+    function removeOldList(){
+        if(document.querySelector('#list')){
+            let oldList = document.querySelector('#list');
+            document.querySelector('body').removeChild(oldList);
+        }
+        
+    }
+
+    function computeCellValue(cell){
+        let cells = gameBoard.container.querySelectorAll('.game-board-cells');
+        if(matchState.markCount == 0 && [cells[0], cells[2], cells[4], cells[6],cells[8]].indexOf(cell) != -1){
+            return 2;
+        }
+        else if(matchState.markCount > 0){
+            return computeAdjacents(cell); 
+            
+        }
+        else return 1;
+    }
+
+    function computeRow(cell){
+        let cellNum = cell.getAttribute('id').slice(16);
+        let rowSuffix = (cellNum< 3) ? 'a': (cellNum<6) ? 'b': 'c';
+        let rowCells = [... document.querySelector(`#game-board-row-${rowSuffix}`).children];
+        let markedCells = rowCells.filter(cell => cell.getAttribute('data-mark') != 'none');
+        if(markedCells.length > 1 && hasSameMark(markedCells) && getMark(cell) == 'none'){
+            return 3;
+        }
+
+        else return 1;
+    }
+    function computeColumn(cell){
+        let columnSuffix = cell.classList[1].slice(18);
+        let columnCells = [... document.querySelectorAll(`.game-board-column-${columnSuffix}`)];
+        let markedCells = columnCells.filter(cell => cell.getAttribute('data-mark') != 'none');
+        if(markedCells.length > 1 && hasSameMark(markedCells) && getMark(cell) == 'none'){
+            return 3;
+        }
+
+        else return 1;
+    }
+
+    function computeDiagonals(){
+
+    }
+
+    function computeAdjacents(cell){
+        let results = [];
+        results.push(computeRow(cell));
+        results.push(computeColumn(cell));
+        let highest = results.reduce((highestNum = 0, result) => (result>highestNum)? result: highestNum);
+        return highest;
+    }
+
+    function hasSameMark(arr){
+        return (getMark(arr[0]) == getMark(arr[1])) ? true: false;
+    }
+
+    function getMark(cell){
+        return cell.getAttribute('data-mark');
+    }
+
+    return{
+        renderBoard, gameBoard,
+    }
+
+    })();
+    Game.renderBoard();
+</script>
+</body>
+</html>

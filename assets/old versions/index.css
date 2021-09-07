@@ -1,0 +1,76 @@
+html, body{
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    width: 100vw;
+}
+body{
+    display: grid;
+    grid-template-rows: 1fr 3fr 1fr 1fr;
+    height: 100%;
+}   
+main{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+#game-board{
+    display: flex;
+    flex-direction: column;
+    width: 200px;
+    height: 200px;
+}
+.game-board-row{
+    display: flex;
+    flex: 1 0 0;
+}
+.game-board-column{
+    display: flex;
+    flex: 1 0 0;
+}
+#game-board-row-b{
+    border-top: 5px solid black;
+    border-bottom: 5px solid black;
+}
+.game-board-column-b{
+    border-left: 5px solid black;
+    border-right: 5px solid black;
+}
+.game-board-cells{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.game-board-cells:hover{
+    background-color: darkcyan;
+    color: whitesmoke;
+}
+#io-nav{
+    display: grid;
+    grid-template-columns: 3fr 2fr 3fr;
+    height: 98%;
+
+}
+.player-div{
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    justify-content: center;
+
+}
+input[type="text"]{
+    width: 100%;
+}
+#player-1-input, #player-2-input{
+    display: flex;
+    justify-content: center;
+
+}
+#player-1-score, #player-2-score{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+#player-1-score>h2, #player-2-score>h2{
+    margin-top: 0;
+    margin-bottom: 0;
+}

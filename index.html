@@ -1,0 +1,82 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe</title>
+    <script src="index.js" defer></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet"> 
+    <link href="cssReset.css" rel="stylesheet">
+    <link href="index.css" rel='stylesheet'>
+</head>
+<body>
+    <header> <h1> Tic Tac Toe</h1> </header>
+
+
+    <main>
+        <section id='index' >
+            <h2 id='player-1-type' class='index-input player-type' data-player-type='Human'> Player </h2>
+            
+            <div class='txt-con'>
+                <div class='player-marker-con'>
+                    <button id='player-1-marker' class='player-marker index-input'> X </button>
+                </div>
+                <input id='player-1-input' type="text" placeholder="Player 1" class='index-input' maxlength="18" required>
+            </div>
+            <div id='play-btn-con'><button id='play-btn' class='index-input'> Play </button></div>
+            <div class='txt-con'><input id='player-2-input' type="text" placeholder="Player 2" class='index-input' required> 
+                <div class='player-marker-con'>
+                    <button id='player-2-marker' class='player-marker index-input' maxlength="18"> O </button>
+                </div>
+            </div>
+            <h2 id='player-2-type' class='index-input player-type' data-player-type='Human'> Player</h2>
+        </section>  
+
+
+        <section id='match-display' >
+            <div id='score-board'>
+                <div id='player-1-score-con' class="score-board-comp"> 
+                    <h2 id='player-1-name-scoreboard'>Player 1</h2>
+                    <h2 id='player-1-score' class='scoreboard-val'> 0 </h2>
+                </div>
+                <div id='current-match-con' class="score-board-comp">
+                    <h2>Match</h2>
+                    <h2 id='current-match' class='scoreboard-val'> 0 </h2>
+                </div>
+                <div id='player-2-score-con' class="score-board-comp">
+                    <h2 id='player-2-name-scoreboard'>Player 2</h2>
+                    <h2 id='player-2-score' class='scoreboard-val'> 0 </h2>
+                </div>
+            </div>
+            <div id='game-board-con'>
+                <div id='game-board'>
+                    <div id='board-row-1' class="board-rows">
+                        <div id='cell-1' class='cells column-1 diagonal-1' data-mark="none"></div>
+                        <div id='cell-2' class='cells column-2' data-mark="none"></div>
+                        <div id='cell-3' class='cells column-3 diagonal-2' data-mark="none"></div>
+                    </div>
+                    <div id='board-row-2' class="board-rows">
+                        <div id='cell-4' class='cells column-1' data-mark="none"></div>
+                        <div id='cell-5' class='cells column-2 diagonal-1 diagonal-2' data-mark="none"></div>
+                        <div id='cell-6' class='cells column-3' data-mark="none"></div>
+                    </div>
+                    <div id='board-row-3' class="board-rows">
+                        <div id='cell-7' class='cells column-1 diagonal-2' data-mark="none"></div>
+                        <div id='cell-8' class='cells column-2' data-mark="none"></div>
+                        <div id='cell-9' class='cells column-3 diagonal-1' data-mark="none"></div>
+                    </div>
+                </div>
+            </div>
+            <div id='context-menu'>
+                <button id='quit-btn'> Quit </button>
+
+            </div>
+        </section>
+    </main>
+
+
+    <footer><h3> Made by <a href="https://github.com/Viveyd?tab=repositories">Viveyd</a> </h3></footer>
+</body>
+</html>
