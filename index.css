@@ -27,8 +27,13 @@ footer{
     justify-content: center;
     align-items: center;
     border-top: 1px solid black;
+    font-family: 'Fredoka One', cursive;
+    font-size: larger;
     background-color: #4aa9ae;
     min-width: 54px;
+}
+a{
+    text-decoration: none;
 }
 
 /* Match display style*/

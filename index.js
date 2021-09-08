@@ -7,6 +7,7 @@ const Game = (function(){
         cell: {},
         marker: ['X', 'O'],
         player: {},
+        matchLimit: 3,
         currentMatch: 1,
     }
     
@@ -15,6 +16,8 @@ const Game = (function(){
         marker: ['X', 'O'], 
         markerCount: 0,
         currentMarker :gameBoard.marker[0],
+
+        
 
     }
     // Cache DOM
@@ -64,6 +67,7 @@ const Game = (function(){
     };
 
     mapBoard();
+    computeBoard();
 
     function startMatch(){
         switchDisplay(2);
@@ -141,6 +145,7 @@ const Game = (function(){
             matchState.markerCount++;
             matchState.unmarkedCells.splice(matchState.unmarkedCells.indexOf(cell), 1);
             changeMarker();
+            computeBoard();
             let eval = evalAdjacents(cell);
             if(eval) matchOver();
             else if(matchState.markerCount == 9) matchOver('draw');
@@ -156,16 +161,144 @@ const Game = (function(){
     }
     // AI move processing
     function AImoves(){
-        let cell = randomMove();
+        // strat for ai. 
+        let cell = ownStrat2();
         markCell(0, cell);
     }
-
+    // Strat-1: Random
     function randomMove(){
         return matchState.unmarkedCells[Math.floor(Math.random() * matchState.unmarkedCells.length)];
     }
+    // Strat-2: Minimax
 
-    function analyzeBoard(){
+    // Strat-3: Own(Basic)
+    function ownStrat1(){
+        let computedBoardObj = computeBoard();
+        let hvc = getHVC(computedBoardObj);
+        console.log(hvc);
+        return hvc;
+    }
 
+    function computeBoard(){
+        let computedBoard = {};
+        for(let i = 0; i< cells.length; i++){
+            // computedValues[`cell${i+1}`] = computeCell(matchState.unmarkedCells[i]); \
+            computedBoard[`cell${i+1}`] = [cells[i], computeCell(cells[i])];
+        }
+        return computedBoard;
+    }
+
+    function computeCell(cell){
+        if(matchState.markerCount == 0){
+            if([cells[0], cells[2], cells[5], cells[6], cells[8]].indexOf(cell) != -1) return 3;
+            else return 1;
+        }
+        else if(matchState.unmarkedCells.indexOf(cell) == -1)return 0;
+        else{
+                let aiMark = gameBoard.player.player2.mark;
+                let humanMark = gameBoard.player.player1.mark;
+                if(isAiFinisher(cell, aiMark)) return 5;
+                if(isHumanFinisher(cell, humanMark)) return 4;
+                else return 1;
+        }
+    }
+    function getHVC(board){
+        let highestVal = 0;
+        let highestCell = [];
+        for(let cell in board){
+            if(board[cell][1] > highestVal){
+                highestVal = board[cell][1];
+                highestCell = [];
+                highestCell.push(board[cell][0]);
+            }
+            else if(board[cell][1] == highestVal){
+                highestCell.push(board[cell][0]);
+            }
+        }
+        return highestCell[Math.floor(Math.random() * highestCell.length)];
+    }
+    function isAiFinisher(cell, mark){
+        return (isRowFinisher(cell, mark) || isColumnFinisher(cell, mark) || isDiagonalFinisher(cell, mark)) ? true: false;
+    }
+    function isHumanFinisher(cell, mark){
+        return (isRowFinisher(cell, mark) || isColumnFinisher(cell, mark) || isDiagonalFinisher(cell, mark)) ? true: false;
+    }
+    function isRowFinisher(cell, mark){
+        let row = getRowOf(cell);
+        let filtered = [... row.children].filter(lineCell => lineCell != cell && getMark(lineCell) == mark);
+        return (filtered.length == 2) ? true: false;
+    }
+    function isColumnFinisher(cell, mark){
+        let column = getColumnOf(cell);
+        let filtered = column.filter(lineCell => lineCell != cell && getMark(lineCell) == mark);
+        return (filtered.length == 2) ? true: false;
+    }
+    function isDiagonalFinisher(cell, mark){
+        if(cell.classList.contains('diagonal-1') || cell.classList.contains('diagonal-2')){
+            let diagonal = getDiagonalOf(cell);
+            if(diagonal.length != 2){
+                let filtered = diagonal.filter(lineCell => lineCell != cell && getMark(lineCell) == mark);
+                return (filtered.length == 2) ? true: false;
+            }
+            else{
+                let filteredA = diagonal[0].filter(lineCell => lineCell != cell && getMark(lineCell) == mark);
+                let filteredB = diagonal[1].filter(lineCell => lineCell != cell && getMark(lineCell) == mark);
+                return (filteredA.length == 2 || filteredB.length  == 2) ? true: false;
+            }
+        }
+        else{
+            return false;
+        }
+    }
+    // Strat-3: Own strat (Advanced)
+    function ownStrat2(){
+        let computedBoardObj = computeBoard2();
+        let hvc = getHVC(computedBoardObj);
+        console.log(hvc);
+        return hvc;
+    }
+    function computeBoard2(){
+        let computedBoard = {};
+        for(let i = 0; i< cells.length; i++){
+            // computedValues[`cell${i+1}`] = computeCell(matchState.unmarkedCells[i]); \
+            computedBoard[`cell${i+1}`] = [cells[i], computeCell2(cells[i])];
+        }
+        return computedBoard;
+    }
+
+    function computeCell2(cell){
+        if(matchState.markerCount == 0){
+            if([cells[0], cells[2], cells[5], cells[6], cells[8]].indexOf(cell) != -1) return 3;
+            else return 1;
+        }
+        else if(matchState.unmarkedCells.indexOf(cell) == -1)return 0;
+        else{
+                let aiMark = gameBoard.player.player2.mark;
+                let humanMark = gameBoard.player.player1.mark;
+                if(isAiFinisher(cell, aiMark)) return 6;
+                else if(isHumanFinisher(cell, humanMark)) return 5;
+                else if(isValidFork(cell, humanMark)) return 3;
+                else return 1;
+        }
+    }
+
+    function isValidFork(cell, humanMark){
+        if(cell.classList.contains('diagonal-1') || cell.classList.contains('diagonal-2')){
+            if(cell == gameBoard.cell[1] || cell == gameBoard.cell[9]){
+                if(getMark(gameBoard.cell[3]) != humanMark && getMark(gameBoard.cell[7])!= humanMark) return true;
+                else if(cell == gameBoard.cell[1] && getMark(gameBoard.cell[9]) != humanMark) return true;
+                else if(cell == gameBoard.cell[9] && getMark(gameBoard.cell[1]) != humanMark) return true;
+                else return false; 
+            }
+            else if(cell == gameBoard.cell[3] || cell == gameBoard.cell[7]){
+                if(getMark(gameBoard.cell[1]) != humanMark && getMark(gameBoard.cell[9])!= humanMark) return true;
+                else if(cell == gameBoard.cell[3] && getMark(gameBoard.cell[7]) != humanMark) return true;
+                else if(cell == gameBoard.cell[7] && getMark(gameBoard.cell[3]) != humanMark) return true;
+                else return false; 
+            }
+            else return false;
+        }
+        else return false;
     }
 
     // Match end events
@@ -173,7 +306,7 @@ const Game = (function(){
         if(draw){
             alert(`Match Over! It was a tie!`);
             let randomMark = ['X','O'][Math.floor(Math.random() * 2)];
-            initNextMatch(randomMark);
+            initNextMatch(randomMark, );
         }
         else{
         let loser = getPlayerByMark(matchState.currentMarker);
@@ -184,13 +317,7 @@ const Game = (function(){
         }
     }
     
-    function resetBoard(){
-        for(let i = 1; i <= 9; i++){
-            let cell = gameBoard.cell[i];
-            cell.textContent = '';
-            setMark(cell, 'none');
-        }
-    }
+    
 
     function initNextMatch(loserMark){
         resetUnmarkedCellsCounter();
@@ -203,7 +330,35 @@ const Game = (function(){
         player1Score.textContent = gameBoard.player.player1.score;
         player2Score.textContent = gameBoard.player.player2.score;
         resetBoard();
-        if( gameBoard.player.player2.type == 'AI' && loserMark == gameBoard.player.player2.mark) AImoves();
+        if(gameBoard.currentMatch> gameBoard.matchLimit) gameOver();
+        else if( gameBoard.player.player2.type == 'AI' && loserMark == gameBoard.player.player2.mark) AImoves();
+    }
+
+    function resetBoard(){
+        for(let i = 1; i <= 9; i++){
+            let cell = gameBoard.cell[i];
+            cell.textContent = '';
+            setMark(cell, 'none');
+        }
+    }
+
+    function gameOver(){
+        let winner = (gameBoard.player.player1.score > gameBoard.player.player2.score) ? gameBoard.player.player1: gameBoard.player.player2;
+        let loser =  (gameBoard.player.player1.score < gameBoard.player.player2.score) ? gameBoard.player.player1: gameBoard.player.player2;
+        if(gameBoard.player.player1.score != gameBoard.player.player2.score){
+            if(gameBoard.player.player2.type == 'AI'){
+                if(winner == gameBoard.player.player2) alert(`At ${winner.score}-${loser.score}, you were dominated by Mimir's superior intellect.`);
+                else alert(`${winner.score}-${loser.score}. You won. Mimir found his successor.`);
+            }
+            else{
+                alert(`${winner.name} won with a score of ${winner.score}-${loser.score} against ${loser.name}!`);
+            }   
+        }
+        else{
+            if(gameBoard.player.player2.type == 'AI') alert(`You went toe-to-toe with Mimir and held your ground. Mimir is impressed.`);
+            else alert(`${winner.name} tied with ${winner.name} at ${winner.score}-${loser.score} in an equal display of skill.`);
+        }
+        quitMatch();
     }
 
     function resetUnmarkedCellsCounter(){
@@ -227,24 +382,46 @@ const Game = (function(){
     }
 
     function evalRow(cell){
-        let id = cell.getAttribute('id').slice(5);
-        let row = (id < 4) ? gameBoard.row[1]: (id < 7) ? gameBoard.row[2]: gameBoard.row[3];
+        let row = getRowOf(cell);
         let filtered = [... row.children].filter(cell => getMark(cell) != 'none');
-        return (filtered.length == 3 && sameMark(filtered[0], filtered[1], filtered[2])) ? true: false;  
+        return (isLineComplete(filtered)) ? true: false;  
     }   
-
     function evalColumn(cell){
-        let column = gameBoard.column[cell.classList[1].slice(7)];
+        // let column = gameBoard.column[cell.classList[1].slice(7)];
+        let column = getColumnOf(cell);
         let filtered = column.filter(cell => getMark(cell) != 'none');
-        return (filtered.length == 3 && sameMark(filtered[0], filtered[1], filtered[2])) ? true: false;
+        return (isLineComplete(filtered)) ? true: false;
     }
     function evalDiagonal(cell){
         if(cell.classList.contains('diagonal-1') || cell.classList.contains('diagonal-2')){
-            let diagonal = gameBoard.diagonal[cell.classList[2].slice(9)];
-            let filtered = diagonal.filter(cell => getMark(cell) != 'none');
-            return (filtered.length == 3 && sameMark(filtered[0], filtered[1], filtered[2])) ? true: false;
+            // let diagonal = (cell == gameBoard.cell[5]) ? [gameBoard.diagonal[1], gameBoard.diagonal[2]]: gameBoard.diagonal[cell.classList[2].slice(9)];
+            let diagonal = getDiagonalOf(cell);
+            if(diagonal.length != 2){
+                let filtered = diagonal.filter(cell => getMark(cell) != 'none');
+                return (isLineComplete(filtered)) ? true: false;
+            }
+            else{
+                let filteredA = diagonal[0].filter(cell => getMark(cell) != 'none');
+                let filteredB = diagonal[1].filter(cell => getMark(cell) != 'none'); 
+                return (isLineComplete(filteredA)||isLineComplete(filteredB)) ? true : false; 
+            }
         }
         else return false;
+    }
+    function getRowOf(cell){
+        let id = cell.getAttribute('id').slice(5);
+        return (id < 4) ? gameBoard.row[1]: (id < 7) ? gameBoard.row[2]: gameBoard.row[3];
+    }
+
+    function getColumnOf(cell){
+        return gameBoard.column[cell.classList[1].slice(7)];
+    }
+
+    function getDiagonalOf(cell){
+        return (cell == gameBoard.cell[5]) ? [gameBoard.diagonal[1], gameBoard.diagonal[2]]: gameBoard.diagonal[cell.classList[2].slice(9)];
+    }
+    function isLineComplete(filtered){
+        return (filtered.length == 3 && sameMark(filtered[0], filtered[1], filtered[2]))
     }
 
     function sameMark(cell1, cell2, cell3){
