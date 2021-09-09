@@ -151,7 +151,11 @@ input[type="text"]{
     width: 5em;
     height: 5em;
     border-radius: 50%;
-    border: 3px solid black;
+    border: 3px solid #4aa9ae;
+    font-size: 100%;
+    font-family: 'Fredoka One', cursive;
+    background: transparent;
+    color: white;
 }
 #play-btn-con{
     display: flex;
@@ -161,7 +165,7 @@ input[type="text"]{
 
 #play-btn{
     margin: 0;
-    font-size: 300%;
+    font-size: 250%;
     width: auto;
     color: #b01030;
     font-family: 'Fredoka One', cursive;

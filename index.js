@@ -16,6 +16,7 @@ const Game = (function(){
         marker: ['X', 'O'], 
         markerCount: 0,
         currentMarker :gameBoard.marker[0],
+        firstCellMarked: 0,
 
         
 
@@ -46,7 +47,7 @@ const Game = (function(){
         playBtn.textContent = 'VERSUS';
     })
     playBtn.addEventListener('mouseout', ()=>{
-        playBtn.textContent = 'PLAY';
+        playBtn.textContent = 'CLICK TO PLAY';
     })
     player1Marker.addEventListener('click', switchMarks);
     player2Marker.addEventListener('click', switchMarks);
@@ -143,9 +144,9 @@ const Game = (function(){
             cell.textContent = matchState.currentMarker;
             cell.setAttribute('data-mark', `${matchState.currentMarker}`); 
             matchState.markerCount++;
+            if(matchState.markerCount == 1) matchState.firstCellMarked = cell;
             matchState.unmarkedCells.splice(matchState.unmarkedCells.indexOf(cell), 1);
             changeMarker();
-            computeBoard();
             let eval = evalAdjacents(cell);
             if(eval) matchOver();
             else if(matchState.markerCount == 9) matchOver('draw');
@@ -175,7 +176,6 @@ const Game = (function(){
     function ownStrat1(){
         let computedBoardObj = computeBoard();
         let hvc = getHVC(computedBoardObj);
-        console.log(hvc);
         return hvc;
     }
 
@@ -254,7 +254,7 @@ const Game = (function(){
     function ownStrat2(){
         let computedBoardObj = computeBoard2();
         let hvc = getHVC(computedBoardObj);
-        console.log(hvc);
+
         return hvc;
     }
     function computeBoard2(){
@@ -267,24 +267,50 @@ const Game = (function(){
     }
 
     function computeCell2(cell){
+        let firstCellMarked = matchState.firstCellMarked;
         if(matchState.markerCount == 0){
-            if([cells[0], cells[2], cells[5], cells[6], cells[8]].indexOf(cell) != -1) return 3;
+            if([cells[0], cells[2], cells[6], cells[8]].indexOf(cell) != -1) return 3;
             else return 1;
         }
         else if(matchState.unmarkedCells.indexOf(cell) == -1)return 0;
+        else if(matchState.markerCount == 1  && cell == cells[4] && humanDiagonalStart(firstCellMarked)) return 4;
         else{
                 let aiMark = gameBoard.player.player2.mark;
                 let humanMark = gameBoard.player.player1.mark;
-                if(isAiFinisher(cell, aiMark)) return 6;
-                else if(isHumanFinisher(cell, humanMark)) return 5;
-                else if(isValidFork(cell, humanMark)) return 3;
+                if(matchState.markerCount > 2    && isAiFinisher(cell, aiMark)) return 6;
+                else if(matchState.markerCount > 2 && isHumanFinisher(cell, humanMark)) return 5;
+                else if(matchState.markerCount == 3  && [cells[0], cells[2], cells[4], cells[6], cells[8]].indexOf(cell) == -1 && humanDiagonalStart(firstCellMarked)) return generateReturnVal(cell, firstCellMarked);
+                else if(isValidFork(cell, humanMark, firstCellMarked)) return 3;
                 else return 1;
         }
     }
 
-    function isValidFork(cell, humanMark){
-        if(cell.classList.contains('diagonal-1') || cell.classList.contains('diagonal-2')){
-            if(cell == gameBoard.cell[1] || cell == gameBoard.cell[9]){
+    function generateReturnVal(cell, firstCell){
+        console.log('reached here');
+        if(firstCell == cells[0] && (cell == cells[1])) return 4;
+        else if(firstCell == cells[2] && (cell == cells[5])) return 4;
+        else if(firstCell == cells[6] && (cell == cells[3])) return 4;
+        else if (firstCell == cells[0] && (cell == cells[7])) return 4;
+        else return 1;
+    }
+
+    function humanDiagonalStart(firstCell){
+        if(getMark(firstCell) == gameBoard.player.player1.mark && [cells[0], cells[2], cells[6], cells[8]].indexOf(firstCell) != -1){
+            return true;
+        }
+        else return false
+    }
+
+    function isValidFork(cell, humanMark, firstCell){
+        if([cells[0], cells[2], cells[6], cells[8]].indexOf(cell) != -1){
+            if(matchState.markerCount == 2 && getMark(firstCell) == gameBoard.player.player2.mark){
+                if(firstCell == cells[0] && (cell == cells[8])) return true;
+                else if(firstCell == cells[2] && (cell == cells[6])) return true;
+                else if(firstCell == cells[6] && (cell == cells[2])) return true;
+                else if (firstCell == cells[8] && (cell == cells[0])) return true;
+                else return false;
+            }
+            else if(cell == gameBoard.cell[1] || cell == gameBoard.cell[9]){
                 if(getMark(gameBoard.cell[3]) != humanMark && getMark(gameBoard.cell[7])!= humanMark) return true;
                 else if(cell == gameBoard.cell[1] && getMark(gameBoard.cell[9]) != humanMark) return true;
                 else if(cell == gameBoard.cell[9] && getMark(gameBoard.cell[1]) != humanMark) return true;
